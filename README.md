@@ -1,147 +1,146 @@
 # Signal Meetings — AI Meeting-to-Execution Operator
 
-Turn a meeting **transcript or audio file** into structured, owner-assigned,
-deadline-tracked **action items** on a live execution board. This is an
-**operator, not a chatbot** — it does the work (extracts, organizes, tracks,
-drafts follow-ups) rather than answering questions.
-
-The whole core loop runs **with no API key** on a deterministic Stub provider,
-so the demo never fails.
+Turn a meeting **transcript** into structured, owner-assigned, deadline-tracked
+**action items** on a live execution board. This is an **operator, not a chatbot** —
+it does the work (extracts, organizes, tracks, drafts follow-ups) rather than
+answering questions.
 
 ```
-Submit transcript / audio → AI extracts action items → human reviews & confirms
-      → items land on the Execution Board → status tracked (Open → In Progress → Done)
+Submit transcript → AI extracts action items → human reviews & confirms
+    → items land on the Execution Board → status tracked (Open → In Progress → Done)
 ```
 
-## Quick start
+Signal Meetings is built and deployed as a native **Lemma pod**. The extraction,
+data, orchestration, and UI all live inside Lemma's primitives — this repo is the
+authored pod bundle plus a standalone version for offline development.
+
+---
+
+## Built on Lemma
+
+[Lemma](https://lemma.work) is a **pod platform**: one workspace that holds a team's
+data, automation, and UI under a single permission boundary. Signal Meetings maps
+cleanly onto its primitives — it is *not* a server + database we host ourselves, and
+*not* a chatbot wrapped around an LLM. Each piece of the product is a Lemma resource:
+
+| Signal Meetings piece | Lemma primitive | In the bundle |
+| --- | --- | --- |
+| Meeting + action-item data | **Tables** (shared, typed) | `deploy/lemma-pod/tables/` |
+| Turning a transcript into structured items | **Agent** with an `output_schema` | `deploy/lemma-pod/agents/extractor/` |
+| Recap-email drafting | **Agent** | `deploy/lemma-pod/agents/follow_up_writer/` |
+| Extract → normalize dates → dedupe → auto-confirm → write rows | **Function** (Python) | `deploy/lemma-pod/functions/submit_transcript/` |
+| Follow-up, Markdown export, .ics export | **Functions** (Python) | `deploy/lemma-pod/functions/` |
+| The Execution Board UI | **App** (on `lemma-sdk`) | `deploy/lemma-pod/apps/board/` |
+
+The extraction runs as a **pod agent on the pod's own model profile** — the model is
+platform configuration, not something the code calls directly. So the same pod runs
+against a self-hosted local stack or the hosted cloud with **zero code changes**; only
+the model profile differs (and the cloud even provides a default model, so no setup at
+all).
+
+### Deploy it to Lemma
+
+The whole pod is one authored bundle at **`deploy/lemma-pod/`**, imported with the
+`lemma` CLI. Minimal flow:
+
+```bash
+lemma servers select default          # cloud (lemma.work) — or `local` for a self-hosted stack
+lemma auth login                       # browser sign-in
+lemma orgs list                        # note your org id
+lemma pods create signal-meetings --org <org>
+lemma pods import ./deploy/lemma-pod --pod signal-meetings --dry-run
+lemma pods import ./deploy/lemma-pod --pod signal-meetings
+lemma functions run submit_transcript --pod signal-meetings \
+  --file ./deploy/lemma-pod/seed/meeting_product.input.json     # extract + seed the board
+lemma apps deploy board ./deploy/lemma-pod/apps/board/index.html --pod signal-meetings --yes
+lemma apps open board --pod signal-meetings
+```
+
+- **Full step-by-step (install → auth → model → import → seed → app → verify), with
+  every gotcha:** `deploy/LEMMA_CLI_DEPLOY_GUIDE.md`.
+- **Design/mapping rationale and the pod runbook:** `deploy/lemma-pod/README.md` and
+  `deploy/LEMMA_DEPLOYMENT.md`.
+
+Because Lemma pods are **zero-access-by-default**, every function and agent declares
+exactly the tables/agents it may touch in `permissions.grants` — the grants travel in
+the bundle and are the source of truth for what each workload can do.
+
+---
+
+## Standalone version (local / offline development)
+
+The repo also contains a self-contained TypeScript app — useful for developing the
+domain logic offline and for a demo that runs with **no API key at all** (a
+deterministic Stub provider). This is the *development* form of the same domain that
+the Lemma pod deploys.
 
 ```bash
 npm install
-npm run dev
+npm run dev          # web (Vite) http://localhost:5173 · API (Fastify) http://localhost:8080
 ```
 
-- Web (Vite): http://localhost:5173
-- API (Fastify): http://localhost:8080
-- On first boot a realistic sample meeting is seeded, so the board is never empty.
+A realistic sample meeting is seeded on first boot, so the board is never empty.
+`npm run build` builds everything; `npm test` runs the unit tests.
 
-`npm run dev` builds `@signal/core`, then runs the server and web together.
-To run pieces separately: `npm run dev:server` and `npm run dev:web`.
+### AI provider is pluggable (a config change, never code)
 
-### Build & test
+All model access is confined behind one `AIProvider` interface, so the provider is an
+env switch — this is the same seam that lets the domain move onto a Lemma agent:
 
-```bash
-npm run build   # builds core, server, and web
-npm test        # core + server unit tests
-```
+- `stub` — deterministic, **no key**; the whole loop runs offline.
+- `groq` / `gemini` — real extraction via an OpenAI-compatible endpoint (mirrors
+  Lemma's `openai_compat` model profile) + audio transcription.
 
-## Going live with Gemini (a single config change)
+Set `AI_PROVIDER` and the matching key in `.env` (see `.env.example`), then restart.
+If a provider is selected but no key is present, the app falls back to Stub so it
+always boots. GitHub-issue creation activates only when `GITHUB_TOKEN` + `GITHUB_REPO`
+are set, and degrades gracefully otherwise. Data provider is `DATABASE_PROVIDER`
+(`sqlite` local, or `supabase`).
 
-The app runs in **Stub mode** by default. To use real Gemini:
+### Standalone architecture
 
-1. Open `.env`.
-2. Set `AI_PROVIDER=gemini`.
-3. Paste your key into `GEMINI_API_KEY=` (replace `__REPLACE_ME__`).
-4. Restart the server.
-
-That's the only change. No domain or UI code edits — text generation already
-goes through Gemini's OpenAI-compatible endpoint (mirroring Lemma's
-`openai_compat` profile), and audio uses `@google/genai`, both behind the
-`AIProvider` interface. If `AI_PROVIDER=gemini` but no real key is present, the
-app safely falls back to Stub so it always boots.
-
-GitHub issue creation (Tier 2) activates when `GITHUB_TOKEN` and `GITHUB_REPO`
-are set; otherwise the button degrades gracefully with a clear message.
-
-## 60-second demo script
-
-1. **Board (hero).** App opens on the seeded "Q3 Launch Planning" board — items
-   grouped Open / In Progress / Done, each with owner, due date, and a subtle
-   confidence bar. Point out the per-meeting **progress chip**.
-2. **New meeting.** Click **New meeting** → paste any transcript → **Extract
-   action items**. (Or switch to **Upload audio** and drop a file — Stub returns
-   a sample transcript so it's demoable offline.)
-3. **Review.** High-confidence items are pre-confirmed (auto-triage); lower ones
-   are flagged. Edit one inline, open a **source quote** to show traceability,
-   then **Confirm all**.
-4. **Track.** Back on the board, move an item Open → In Progress → Done (buttons
-   or keyboard `1/2/3`, `j/k` to navigate). Watch the progress chip update.
-5. **Operate.** Click **Follow-up** for an auto-drafted recap (copy to
-   clipboard), then export the meeting as **Markdown** or **.ics**.
-6. **Power.** Press **⌘K / Ctrl-K** for the command palette; toggle **dark/light**.
-
-## Architecture
-
-npm workspaces monorepo:
+npm workspaces monorepo, structured so the domain ports to Lemma with minimal rewrite:
 
 ```
 packages/core   Pure domain — types, AIProvider + repository interfaces,
                 ExtractionService, FollowUpService, DuplicateDetector, export,
-                natural-language date parsing. No Fastify/React. (Future Lemma pod.)
-server          Fastify routes (thin) + Zod, SQLite repositories, migrations +
-                seed, StubAIProvider + GeminiProvider, GitHub + error envelope.
+                natural-language date parsing. No Fastify/React.
+                → this logic is what deploy/lemma-pod/functions/*/code.py re-implements.
+server          Fastify routes (thin) + Zod, SQLite/Supabase repositories, migrations +
+                seed, Stub/Groq/Gemini providers, uniform error envelope.
 web             React + Vite + Tailwind. Design tokens, UI primitives, and the
-                submit / review / board / history features.
+                submit / review / board / dashboard / history features.
 ```
 
-Portability (enforced): all AI calls live inside provider classes; domain code
-depends only on `AIProvider`; all data access via repository interfaces; all
-secrets/URLs/models from env. See `deploy/LEMMA_DEPLOYMENT.md`.
+---
 
-## API
+## 60-second demo (either the Lemma board app or the standalone web app)
 
-| Method | Route | Purpose |
-| --- | --- | --- |
-| POST | `/meetings` | create + extract from pasted transcript |
-| POST | `/meetings/transcribe-audio` | multipart audio → transcript → extraction |
-| GET | `/meetings` | history list |
-| GET | `/meetings/:id` | meeting + action items |
-| GET | `/action-items` | filter / sort (owner, status, overdue, search) |
-| PATCH | `/action-items/:id` | edit fields / status / confirm |
-| POST | `/meetings/:id/follow-up` | draft recap |
-| POST | `/action-items/:id/github-issue` | create issue (graceful if unconfigured) |
-| GET | `/meetings/:id/export.md` | Markdown checklist |
-| GET | `/meetings/:id/export.ics` | calendar of dated items |
+1. **Board (hero).** Opens on the seeded board — items grouped Open / In Progress /
+   Done, each with owner, due date, and a confidence bar.
+2. **New meeting.** Paste a transcript → **Extract action items**. The extractor
+   agent (Lemma) / provider (standalone) returns a TL;DR, decisions, and owner-assigned
+   items with source quotes.
+3. **Review.** High-confidence items are pre-confirmed (auto-triage); open a **source
+   quote** to show traceability.
+4. **Track.** Move an item Open → In Progress → Done; the board persists it.
+5. **Operate.** Draft an auto-generated **follow-up** recap, then export the meeting as
+   **Markdown** or **.ics**.
 
-Uniform error envelope: `{ "error": { "code", "message" } }`. No stack traces or
-secrets are leaked.
+---
 
 ## Feature coverage
 
-- **Tier 0 (core):** text + audio intake, extraction, review/confirm, execution
-  board, status persistence, source-quote traceability, Stub provider (no key).
+- **Tier 0 (core):** transcript intake, extraction, review/confirm, execution board,
+  status persistence, source-quote traceability.
 - **Tier 1:** TL;DR + decisions, natural-language deadlines, follow-up draft,
-  confidence auto-triage, search/filter/sort, meeting history, progress chip,
-  autosaved transcript draft.
-- **Tier 2:** one-click GitHub issue, command palette + shortcuts, undo on status
-  change, light duplicate detection, Markdown + .ics export.
-
-## Running with Docker
-
-```bash
-docker compose up --build
-```
-
-- Web: http://localhost:5173 (nginx serves the build and proxies the API)
-- API: http://localhost:8080
-
-Pass real keys via environment (e.g. `AI_PROVIDER=gemini GEMINI_API_KEY=… docker compose up`).
-
-## Migration to Lemma
-
-The proto is structured to port with minimal rewrite:
-
-- **React app → Lemma TS frontend** (`lemma-sdk`).
-- **`/packages/core` → Python pod function** (`lemma-sdk`), same orchestration.
-- **`AIProvider` → `openai_compat` profile** — config swap, no code change.
-- **Repositories → Lemma datastore**; **transcripts → document store**.
-
-Full steps and the (intentionally unfabricated) pod manifest TODO are in
-`deploy/LEMMA_DEPLOYMENT.md`, with `deploy/lemma-setup.sh` and
-`deploy/config.toml.example`.
+  confidence auto-triage, search/filter/sort, meeting history, progress chip.
+- **Tier 2:** command palette + shortcuts, undo on status change, light duplicate
+  detection, Markdown + .ics export. (GitHub issues + audio intake exist in the
+  standalone app; see `HANDOFF` for their status on the Lemma port.)
 
 ## Configuration
 
-All config comes from environment variables — see `.env.example`. Key ones:
-`AI_PROVIDER`, `GEMINI_API_KEY`, `PORT`, `DATABASE_URL`, `AUTO_CONFIRM_CONFIDENCE`,
-`GITHUB_TOKEN`, `GITHUB_REPO`. `.env` is git-ignored; `.env.example` is committed.
-Never commit real keys.
+All config comes from environment variables — see `.env.example`. `.env` is
+git-ignored; never commit real keys. For the Lemma pod, secrets/model live in the
+**pod's model profile** (platform config), not in the repo.
