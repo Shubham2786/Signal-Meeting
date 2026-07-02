@@ -1,0 +1,38 @@
+{
+    "name": "submit_transcript",
+    "description": "Extract structured action items from a meeting transcript (via the extractor agent), normalize deadlines, flag duplicates, and persist the meeting + items.",
+    "type": "API",
+    "code": {
+        "$file": "code.py"
+    },
+    "permissions": {
+        "grants": [
+            {
+                "resource_type": "datastore_table",
+                "resource_name": "meetings",
+                "permission_ids": [
+                    "datastore.table.read",
+                    "datastore.record.read",
+                    "datastore.record.write"
+                ]
+            },
+            {
+                "resource_type": "datastore_table",
+                "resource_name": "action_items",
+                "permission_ids": [
+                    "datastore.table.read",
+                    "datastore.record.read",
+                    "datastore.record.write"
+                ]
+            },
+            {
+                "resource_type": "agent",
+                "resource_name": "extractor",
+                "permission_ids": [
+                    "agent.read",
+                    "agent.execute"
+                ]
+            }
+        ]
+    }
+}

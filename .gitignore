@@ -33,3 +33,8 @@ lemma-platform/
 
 # Kiro workspace config (not part of the project)
 .kiro/
+HANDOFF.md
+
+# Lemma app build artifacts
+deploy/lemma-pod/apps/*/dist.zip
+deploy/lemma-pod/apps/*/dist/

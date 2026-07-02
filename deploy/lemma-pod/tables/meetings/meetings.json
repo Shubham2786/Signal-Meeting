@@ -1,0 +1,37 @@
+{
+    // Shared team data — every pod member sees the same meetings.
+    // id / created_at / updated_at are system-managed; never declare them.
+    "name": "meetings",
+    "primary_key_column": "id",
+    "enable_rls": false,
+    "columns": [
+        {
+            "name": "title",
+            "type": "TEXT",
+            "required": true,
+            "max_length": 240
+        },
+        {
+            "name": "transcript",
+            "type": "TEXT"
+        },
+        {
+            "name": "source_type",
+            "type": "ENUM",
+            "default": "text",
+            "options": [
+                "text",
+                "audio"
+            ]
+        },
+        {
+            "name": "tldr",
+            "type": "TEXT"
+        },
+        {
+            "name": "decisions",
+            "type": "JSON"
+        }
+    ],
+    "config": {}
+}

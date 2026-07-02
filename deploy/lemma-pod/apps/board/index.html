@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signal Meetings — Execution Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b10;
+      --surface: #14141c;
+      --surface-2: #1b1b26;
+      --border: #262633;
+      --border-strong: #34343f;
+      --text: #ecebf4;
+      --muted: #9a99ad;
+      --faint: #6c6b7e;
+      --primary: #8b7fe8;
+      --primary-hover: #9d92f0;
+      --primary-ink: #0b0b10;
+      --slate: #64748b;
+      --amber: #d8a34a;
+      --emerald: #4ea07a;
+      --danger: #e06a6a;
+      --focus: #a89ff0;
+      --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+      --sp: 8px;
+      --radius: 14px;
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f6f6fb;
+      --surface: #ffffff;
+      --surface-2: #f2f1f8;
+      --border: #e6e5ef;
+      --border-strong: #d7d6e3;
+      --text: #1a1a24;
+      --muted: #5c5b6e;
+      --faint: #8b8a9c;
+      --primary: #6b5fd6;
+      --primary-hover: #5b4fc6;
+      --primary-ink: #ffffff;
+      --focus: #6b5fd6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      background:
+        radial-gradient(120% 80% at 100% 0%, rgba(139, 127, 232, .10) 0%, rgba(139, 127, 232, 0) 55%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color .2s ease, color .2s ease;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vw, 40px);
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    a {
+      color: var(--primary);
+    }
+
+    /* header */
+    .top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      font-size: .72rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      letter-spacing: -.02em;
+      margin: 4px 0 0;
+    }
+
+    .sub {
+      color: var(--muted);
+      margin: 6px 0 0;
+      max-width: 52ch;
+      font-size: .92rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .8rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 12px;
+    }
+
+    .pip {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 0 0 rgba(78, 160, 122, .5);
+      animation: pulse 2.4s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(78, 160, 122, .45);
+      }
+
+      70% {
+        box-shadow: 0 0 0 7px rgba(78, 160, 122, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(78, 160, 122, 0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pip {
+        animation: none;
+      }
+
+      * {
+        transition: none !important;
+      }
+    }
+
+    .pill button,
+    .ghost {
+      border: none;
+      background: none;
+      color: var(--text);
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    .pill .icon {
+      text-decoration: none;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    /* tabs */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .tabs button {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-weight: 500;
+      transition: all .15s ease;
+    }
+
+    .tabs button.on {
+      background: var(--primary);
+      color: var(--primary-ink);
+      border-color: var(--primary);
+    }
+
+    .tabs button:hover:not(.on) {
+      border-color: var(--border-strong);
+      color: var(--text);
+    }
+
+    /* stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+
+    .stat .n {
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat .l {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .stat.progress .bar {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .stat.progress .bar i {
+      display: block;
+      height: 100%;
+      background: var(--emerald);
+      border-radius: 999px;
+      transition: width .5s ease;
+    }
+
+    /* board */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 860px) {
+      .board {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .col {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      min-height: 160px;
+    }
+
+    .col h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .82rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin: 4px 4px 12px;
+      color: var(--muted);
+    }
+
+    .col h3 .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 3px;
+    }
+
+    .col h3 .cnt {
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+      color: var(--faint);
+    }
+
+    .dot.open,
+    .badge.open {
+      background: var(--slate);
+    }
+
+    .dot.in_progress,
+    .badge.in_progress {
+      background: var(--amber);
+    }
+
+    .dot.done,
+    .badge.done {
+      background: var(--emerald);
+    }
+
+    .cards {
+      display: grid;
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 13px;
+      transition: border-color .15s ease, transform .15s ease;
+    }
+
+    .card:hover {
+      border-color: var(--border-strong);
+    }
+
+    .card .ttl {
+      font-weight: 600;
+      font-size: .92rem;
+    }
+
+    .card .meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .chip {
+      font-size: .72rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 9px;
+    }
+
+    .chip.owner {
+      color: var(--text);
+    }
+
+    .chip.due {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chip.due.overdue {
+      color: var(--danger);
+      border-color: rgba(224, 106, 106, .4);
+    }
+
+    .chip.dup {
+      color: var(--danger);
+      border-color: rgba(224, 106, 106, .4);
+    }
+
+    .conf {
+      margin-top: 9px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .conf .track {
+      flex: 1;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .conf .track i {
+      display: block;
+      height: 100%;
+      background: var(--primary);
+      border-radius: 999px;
+    }
+
+    .conf .v {
+      font-size: .68rem;
+      color: var(--faint);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .quote {
+      margin-top: 9px;
+      font-size: .78rem;
+      color: var(--faint);
+      border-left: 2px solid var(--border-strong);
+      padding-left: 9px;
+      line-height: 1.45;
+    }
+
+    .moves {
+      display: flex;
+      gap: 6px;
+      margin-top: 11px;
+    }
+
+    .moves button {
+      flex: 1;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 6px;
+      font-size: .74rem;
+      transition: all .15s ease;
+    }
+
+    .moves button:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .moves button:disabled {
+      opacity: .3;
+      cursor: not-allowed;
+    }
+
+    .col .empty {
+      color: var(--faint);
+      font-size: .82rem;
+      text-align: center;
+      padding: 24px 8px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    /* panels */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      margin-top: 20px;
+    }
+
+    .panel h2 {
+      font-size: 1.1rem;
+      margin: 0 0 4px;
+      letter-spacing: -.01em;
+    }
+
+    .panel .cap {
+      color: var(--muted);
+      font-size: .85rem;
+      margin: 0 0 16px;
+    }
+
+    label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+
+    textarea,
+    input[type=text] {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font: inherit;
+      padding: 11px 13px;
+      resize: vertical;
+    }
+
+    textarea:focus,
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea {
+      min-height: 190px;
+      line-height: 1.55;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .row>div:first-child {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: var(--primary-ink);
+      border: none;
+      border-radius: 10px;
+      padding: 11px 20px;
+      font-weight: 600;
+      transition: background .15s ease, transform .1s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: progress;
+    }
+
+    .btn.secondary {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn.secondary:hover:not(:disabled) {
+      border-color: var(--border-strong);
+      background: var(--surface);
+    }
+
+    .result {
+      margin-top: 18px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+
+    .result h4 {
+      margin: 0 0 6px;
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--primary);
+    }
+
+    .result ul {
+      margin: 6px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .result .tldr {
+      color: var(--text);
+    }
+
+    /* meetings list */
+    .mtg {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      background: var(--surface-2);
+    }
+
+    .mtg .h {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .mtg .h .t {
+      font-weight: 600;
+    }
+
+    .mtg .h .d {
+      font-size: .74rem;
+      color: var(--faint);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mtg .tldr {
+      color: var(--muted);
+      font-size: .88rem;
+      margin: 8px 0 0;
+    }
+
+    .mtg .decisions {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: .84rem;
+    }
+
+    .mtg .acts {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .mtg .acts button {
+      font-size: .8rem;
+      padding: 7px 13px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .mtg .acts button:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .mtg .draft {
+      margin-top: 12px;
+      white-space: pre-wrap;
+      font-size: .84rem;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      line-height: 1.55;
+      font-family: var(--mono);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 11px 18px;
+      color: var(--text);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      z-index: 50;
+      font-size: .88rem;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .center {
+      min-height: 86dvh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .center .box {
+      max-width: 26rem;
+    }
+
+    .center .btn {
+      margin-top: 20px;
+    }
+
+    .skel {
+      background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+      border-radius: 10px;
+      height: 64px;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .hide {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="center">
+      <div class="box">
+        <p>Loading…</p>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function () {
+      var cfg = window.__LEMMA_CONFIG__ || {};
+      var base = (cfg.apiUrl || window.location.origin).replace(/\/$/, "");
+      var s = document.createElement("script");
+      s.src = base + "/public/sdk/lemma-client.js";
+      s.onload = boot;
+      s.onerror = function () { fatal("Couldn't load the Lemma SDK from " + s.src); };
+      document.head.appendChild(s);
+    })();
+
+    var client, STATE = { items: [], meetings: [], tab: "board", user: null };
+    var STATUSES = ["open", "in_progress", "done"];
+    var LABEL = { open: "Open", in_progress: "In Progress", done: "Done" };
+
+    function $(id) { return document.getElementById(id); }
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+      });
+    }
+    function field(r, k) { return (r && r.data && r.data[k] != null) ? r.data[k] : (r ? r[k] : undefined); }
+    function listOf(resp) { return (resp && (resp.items || resp.data)) || (Array.isArray(resp) ? resp : []); }
+    function fatal(msg) { $("app").innerHTML = '<div class="center"><div class="box"><h1>⚠</h1><p>' + esc(msg) + "</p></div></div>"; }
+    function toast(msg) { var t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("show"); }, 2600); }
+
+    function currentTheme() { try { return localStorage.getItem("signal-theme") || "dark"; } catch (e) { return "dark"; } }
+    function applyTheme(t) {
+      document.documentElement.setAttribute("data-theme", t);
+      try { localStorage.setItem("signal-theme", t); } catch (e) { }
+      var b = $("theme"); if (b) b.textContent = t === "dark" ? "☀" : "☾";
+    }
+    function firstName(u) {
+      if (u && u.name) return String(u.name).trim().split(/\s+/)[0];
+      if (u && u.email) { var l = String(u.email).split("@")[0].replace(/[._-]+/g, " ").replace(/[0-9]+/g, "").trim().split(" ")[0]; if (l) return l.charAt(0).toUpperCase() + l.slice(1); }
+      return "there";
+    }
+
+    async function boot() {
+      applyTheme(currentTheme());
+      try {
+        client = new window.LemmaClient.LemmaClient();
+        var auth = await client.initialize();
+        if (auth.status !== "authenticated") return signIn();
+        STATE.user = auth.user;
+        await refresh();
+      } catch (e) { fatal((e && e.message) || "Something went wrong."); }
+    }
+
+    function signIn() {
+      $("app").innerHTML =
+        '<div class="center"><div class="box"><div class="eyebrow">Signal Meetings</div>' +
+        '<h1>Execution Board</h1>' +
+        '<p class="sub" style="margin:8px auto 0">Sign in to open the operator.</p>' +
+        '<button class="btn" id="si">Sign in</button></div></div>';
+      $("si").onclick = function () { client.auth.redirectToAuth(); };
+    }
+
+    async function loadData() {
+      var items = [], meetings = [];
+      try { items = listOf(await client.records.list("action_items", { limit: 300 })); } catch (e) { }
+      try { meetings = listOf(await client.records.list("meetings", { limit: 100 })); } catch (e) { }
+      STATE.items = items; STATE.meetings = meetings;
+    }
+
+    async function refresh() { await loadData(); render(); }
+
+    /* ---------- run a pod function, tolerate sync + async completion ---------- */
+    async function runFn(name, input) {
+      var res = await client.functions.run(name, { input: input });
+      var status = field(res, "status");
+      var runId = field(res, "id");
+      var tries = 0;
+      while (status && status !== "COMPLETED" && status !== "FAILED" && runId && tries < 60) {
+        await new Promise(function (r) { setTimeout(r, 1500); });
+        res = await client.functions.runs.get(name, runId);
+        status = field(res, "status"); tries++;
+      }
+      if (field(res, "status") === "FAILED") throw new Error(field(res, "error") || "Function failed.");
+      return field(res, "output_data") || {};
+    }
+
+    /* --------------------------------- render -------------------------------- */
+    function render() {
+      var items = STATE.items;
+      var counts = { open: 0, in_progress: 0, done: 0 };
+      items.forEach(function (i) { var s = field(i, "status") || "open"; if (counts[s] != null) counts[s]++; });
+      var total = items.length;
+      var pct = total ? Math.round((counts.done / total) * 100) : 0;
+      var who = STATE.user && (STATE.user.name || STATE.user.email);
+
+      var html =
+        '<div class="wrap"><div class="top"><div>' +
+        '<div class="eyebrow">Signal Meetings</div>' +
+        "<h1>Welcome back, " + esc(firstName(STATE.user)) + "</h1>" +
+        '<p class="sub">Your meeting-to-execution operator. Submit a transcript, review what the AI extracted, and track every action item to done.</p></div>' +
+        '<div class="pill"><span class="pip"></span> live' + (who ? " · " + esc(who) : "") +
+        ' · <button id="out">sign out</button> · <button id="theme" class="icon" title="Toggle theme">☀</button></div></div>';
+
+      html += '<div class="tabs">' +
+        '<button data-tab="board" class="' + (STATE.tab === "board" ? "on" : "") + '">Execution Board</button>' +
+        '<button data-tab="new" class="' + (STATE.tab === "new" ? "on" : "") + '">New Meeting</button>' +
+        '<button data-tab="meetings" class="' + (STATE.tab === "meetings" ? "on" : "") + '">Meetings &amp; Export</button></div>';
+
+      html += '<div class="stats">' +
+        stat(total, "action items") +
+        stat(counts.open, "open") +
+        stat(counts.in_progress, "in progress") +
+        progressStat(counts.done, pct) +
+        stat(STATE.meetings.length, STATE.meetings.length === 1 ? "meeting" : "meetings") + "</div>";
+
+      if (STATE.tab === "board") html += boardView(items, counts);
+      else if (STATE.tab === "new") html += newView();
+      else html += meetingsView();
+
+      html += "</div>";
+      $("app").innerHTML = html;
+      applyTheme(currentTheme());
+      wire();
+    }
+
+    function stat(n, l) { return '<div class="stat"><div class="n">' + esc(n) + '</div><div class="l">' + esc(l) + "</div></div>"; }
+    function progressStat(n, pct) {
+      return '<div class="stat progress"><div class="n">' + esc(pct) + '%</div><div class="l">complete</div>' +
+        '<div class="bar"><i style="width:' + pct + '%"></i></div></div>';
+    }
+
+    function boardView(items, counts) {
+      var cols = STATUSES.map(function (st) {
+        var inCol = items.filter(function (i) { return (field(i, "status") || "open") === st; });
+        var cards = inCol.length
+          ? '<div class="cards">' + inCol.map(card).join("") + "</div>"
+          : '<div class="empty">Nothing here yet</div>';
+        return '<section class="col"><h3><span class="dot ' + st + '"></span>' + LABEL[st] +
+          '<span class="cnt">' + inCol.length + "</span></h3>" + cards + "</section>";
+      }).join("");
+      return '<div class="board">' + cols + "</div>";
+    }
+
+    function card(i) {
+      var id = field(i, "id");
+      var st = field(i, "status") || "open";
+      var owner = field(i, "owner") || "Unassigned";
+      var due = field(i, "due_date");
+      var conf = Number(field(i, "confidence"));
+      if (isNaN(conf)) conf = 0;
+      var quote = field(i, "source_quote");
+      var dup = field(i, "duplicate_of");
+      var idx = STATUSES.indexOf(st);
+      var overdue = due && st !== "done" && due < new Date().toISOString().slice(0, 10);
+
+      var meta = '<span class="chip owner">' + esc(owner) + "</span>";
+      if (due) meta += '<span class="chip due' + (overdue ? " overdue" : "") + '">' + esc(due) + (overdue ? " · overdue" : "") + "</span>";
+      if (dup) meta += '<span class="chip dup" title="Possible duplicate">⧉ duplicate</span>';
+
+      return '<article class="card" data-id="' + esc(id) + '">' +
+        '<div class="ttl">' + esc(field(i, "title")) + "</div>" +
+        '<div class="meta">' + meta + "</div>" +
+        '<div class="conf"><span class="track"><i style="width:' + Math.round(conf * 100) + '%"></i></span>' +
+        '<span class="v">' + Math.round(conf * 100) + "% conf</span></div>" +
+        (quote ? '<div class="quote">' + esc(quote) + "</div>" : "") +
+        '<div class="moves">' +
+        '<button data-move="' + esc(id) + '" data-dir="-1"' + (idx <= 0 ? " disabled" : "") + ' aria-label="Move left">← ' + (idx > 0 ? LABEL[STATUSES[idx - 1]] : "") + "</button>" +
+        '<button data-move="' + esc(id) + '" data-dir="1"' + (idx >= 2 ? " disabled" : "") + ' aria-label="Move right">' + (idx < 2 ? LABEL[STATUSES[idx + 1]] : "") + " →</button>" +
+        "</div></article>";
+    }
+
+    function newView() {
+      return '<div class="panel"><h2>Submit a transcript</h2>' +
+        '<p class="cap">Paste a meeting transcript. The extractor agent pulls out a summary, decisions, and owner-assigned action items — then lands them on the board.</p>' +
+        '<label for="title">Meeting title <span style="color:var(--faint)">(optional)</span></label>' +
+        '<input type="text" id="title" placeholder="e.g. Weekly product sync" />' +
+        '<div style="height:14px"></div>' +
+        '<label for="transcript">Transcript</label>' +
+        '<textarea id="transcript" placeholder="Priya: Arjun will finish the billing integration by next Friday. Ananya: I\'ll send the pricing deck tomorrow. We decided to postpone the mobile launch to Q3."></textarea>' +
+        '<div class="row"><div></div><button class="btn" id="submit">Extract action items</button></div>' +
+        '<div id="submitResult"></div></div>';
+    }
+
+    function meetingsView() {
+      if (!STATE.meetings.length)
+        return '<div class="panel"><h2>No meetings yet</h2><p class="cap">Submit a transcript from the New Meeting tab to see it here.</p></div>';
+      var sorted = STATE.meetings.slice().sort(function (a, b) {
+        return String(field(b, "created_at") || "").localeCompare(String(field(a, "created_at") || ""));
+      });
+      var body = sorted.map(function (m) {
+        var id = field(m, "id");
+        var decisions = field(m, "decisions");
+        var dec = Array.isArray(decisions) && decisions.length
+          ? '<ul class="decisions">' + decisions.map(function (d) { return "<li>" + esc(d) + "</li>"; }).join("") + "</ul>" : "";
+        var created = field(m, "created_at");
+        var when = created ? new Date(created).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+        return '<div class="mtg" data-mtg="' + esc(id) + '"><div class="h"><span class="t">' + esc(field(m, "title")) + "</span>" +
+          '<span class="d">' + esc(when) + "</span></div>" +
+          (field(m, "tldr") ? '<p class="tldr">' + esc(field(m, "tldr")) + "</p>" : "") + dec +
+          '<div class="acts">' +
+          '<button data-followup="' + esc(id) + '">Draft follow-up</button>' +
+          '<button data-export="md" data-mtg-id="' + esc(id) + '">Export .md</button>' +
+          '<button data-export="ics" data-mtg-id="' + esc(id) + '">Export .ics</button></div>' +
+          '<div class="draft hide" id="draft-' + esc(id) + '"></div></div>';
+      }).join("");
+      return '<div class="panel"><h2>Meetings</h2><p class="cap">Draft a recap or export action items to Markdown or calendar.</p>' + body + "</div>";
+    }
+
+    /* --------------------------------- wiring -------------------------------- */
+    function wire() {
+      if ($("out")) $("out").onclick = function () { client.auth.signOut().then(function () { location.reload(); }); };
+      if ($("theme")) $("theme").onclick = function () { applyTheme(currentTheme() === "dark" ? "light" : "dark"); };
+      document.querySelectorAll(".tabs button").forEach(function (b) {
+        b.onclick = function () { STATE.tab = b.getAttribute("data-tab"); render(); };
+      });
+
+      // board moves
+      document.querySelectorAll("[data-move]").forEach(function (b) {
+        b.onclick = async function () {
+          var id = b.getAttribute("data-move"), dir = parseInt(b.getAttribute("data-dir"), 10);
+          var item = STATE.items.find(function (x) { return String(field(x, "id")) === String(id); });
+          if (!item) return;
+          var cur = STATUSES.indexOf(field(item, "status") || "open");
+          var next = STATUSES[cur + dir]; if (!next) return;
+          document.querySelectorAll('[data-move="' + id + '"]').forEach(function (x) { x.disabled = true; });
+          try {
+            await client.records.update("action_items", id, { status: next });
+            if (item.data) item.data.status = next; else item.status = next;
+            toast("Moved to " + LABEL[next]);
+            render();
+          } catch (e) { toast("Couldn't update: " + (e.message || "error")); render(); }
+        };
+      });
+
+      // submit transcript
+      if ($("submit")) $("submit").onclick = async function () {
+        var transcript = $("transcript").value.trim();
+        if (!transcript) { toast("Paste a transcript first."); $("transcript").focus(); return; }
+        var title = $("title").value.trim();
+        $("submit").disabled = true; $("submit").textContent = "Extracting…";
+        $("submitResult").innerHTML = '<div class="result"><div class="skel"></div></div>';
+        try {
+          var out = await runFn("submit_transcript", title ? { transcript: transcript, title: title } : { transcript: transcript });
+          $("submitResult").innerHTML =
+            '<div class="result"><h4>Extracted</h4>' +
+            '<p class="tldr">' + esc(out.tldr || "") + "</p>" +
+            '<p style="color:var(--muted);margin:.6rem 0 0">Landed <b style="color:var(--text)">' + esc(out.action_item_count || 0) +
+            "</b> action item(s) on the board.</p></div>";
+          toast("Extracted " + (out.action_item_count || 0) + " action item(s)");
+          $("transcript").value = ""; $("title").value = "";
+          await loadData();
+        } catch (e) {
+          $("submitResult").innerHTML = '<div class="result"><h4 style="color:var(--danger)">Extraction failed</h4><p style="color:var(--muted)">' + esc(e.message || "Try again.") + "</p></div>";
+        } finally { $("submit").disabled = false; $("submit").textContent = "Extract action items"; }
+      };
+
+      // follow-up
+      document.querySelectorAll("[data-followup]").forEach(function (b) {
+        b.onclick = async function () {
+          var id = b.getAttribute("data-followup"); var box = $("draft-" + id);
+          b.disabled = true; b.textContent = "Drafting…"; box.classList.remove("hide"); box.textContent = "…";
+          try { var out = await runFn("draft_follow_up", { meeting_id: id }); box.textContent = out.draft || "(empty)"; }
+          catch (e) { box.textContent = "Couldn't draft: " + (e.message || "error"); }
+          finally { b.disabled = false; b.textContent = "Draft follow-up"; }
+        };
+      });
+
+      // export
+      document.querySelectorAll("[data-export]").forEach(function (b) {
+        b.onclick = async function () {
+          var kind = b.getAttribute("data-export"), id = b.getAttribute("data-mtg-id");
+          var label = b.textContent; b.disabled = true; b.textContent = "…";
+          try {
+            if (kind === "md") { var o = await runFn("export_markdown", { meeting_id: id }); download(o.markdown || "", "meeting-" + id.slice(0, 8) + ".md", "text/markdown"); }
+            else { var o2 = await runFn("export_ics", { meeting_id: id }); download(o2.ics || "", "meeting-" + id.slice(0, 8) + ".ics", "text/calendar"); }
+            toast("Downloaded");
+          } catch (e) { toast("Export failed: " + (e.message || "error")); }
+          finally { b.disabled = false; b.textContent = label; }
+        };
+      });
+    }
+
+    function download(content, filename, mime) {
+      var blob = new Blob([content], { type: mime + ";charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a"); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+  </script>
+</body>
+
+</html>

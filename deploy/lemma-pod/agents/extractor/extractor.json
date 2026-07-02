@@ -1,0 +1,80 @@
+{
+    "name": "extractor",
+    "description": "Converts a meeting transcript into structured execution data: TL;DR, decisions, and owner-assigned action items.",
+    "instruction": {
+        "$file": "instruction.md"
+    },
+    "toolsets": [],
+    "output_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "tldr": {
+                "type": "string",
+                "description": "<= 3 sentence summary of the meeting"
+            },
+            "decisions": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "description": "Key decisions made in the meeting"
+            },
+            "actionItems": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "title": {
+                            "type": "string",
+                            "description": "Imperative task title"
+                        },
+                        "owner": {
+                            "type": "string",
+                            "description": "Person name or 'Unassigned'"
+                        },
+                        "dueDate": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "description": "ISO 8601 date (YYYY-MM-DD), a natural-language phrase like 'next Friday', or null"
+                        },
+                        "followUp": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "description": "Suggested next step or null"
+                        },
+                        "sourceQuote": {
+                            "type": "string",
+                            "description": "Verbatim transcript snippet justifying the item"
+                        },
+                        "confidence": {
+                            "type": "number",
+                            "description": "0.0..1.0 confidence"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "owner",
+                        "dueDate",
+                        "followUp",
+                        "sourceQuote",
+                        "confidence"
+                    ]
+                }
+            }
+        },
+        "required": [
+            "tldr",
+            "decisions",
+            "actionItems"
+        ]
+    },
+    "permissions": {
+        "grants": []
+    }
+}

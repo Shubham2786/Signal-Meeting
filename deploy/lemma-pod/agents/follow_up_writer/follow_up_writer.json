@@ -1,0 +1,11 @@
+{
+    "name": "follow_up_writer",
+    "description": "Drafts a concise, friendly recap email from a meeting summary and its action items.",
+    "instruction": {
+        "$file": "instruction.md"
+    },
+    "toolsets": [],
+    "permissions": {
+        "grants": []
+    }
+}

@@ -1,0 +1,5 @@
+{
+    "name": "signal-meetings",
+    "description": "AI Meeting-to-Execution Operator — turns meeting transcripts into owner-assigned, deadline-tracked action items on a live execution board.",
+    "format_version": 1
+}

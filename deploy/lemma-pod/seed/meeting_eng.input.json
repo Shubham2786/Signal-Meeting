@@ -1,0 +1,4 @@
+{
+    "title": "Platform Engineering Standup",
+    "transcript": "Aditya Rao: Quick standup. The auth service latency is up. Karthik Menon, can you investigate the token validation path by end of week? Karthik Menon: On it — I suspect the cache layer. Aditya Rao: Sneha Kulkarni, please upgrade the CI runners to the new image in 3 days. Sneha Kulkarni: Will do, I'll stage it first. Ishaan Kapoor: I'll write the incident postmortem for last week's outage and share it by Friday. Meera Joshi: I'll roll out the rate-limiter to production next Tuesday after review. Aditya Rao: We decided to standardize on structured logging across all services."
+}

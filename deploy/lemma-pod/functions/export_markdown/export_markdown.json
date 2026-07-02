@@ -1,0 +1,28 @@
+{
+    "name": "export_markdown",
+    "description": "Render a meeting and its action items as a Markdown checklist.",
+    "type": "API",
+    "code": {
+        "$file": "code.py"
+    },
+    "permissions": {
+        "grants": [
+            {
+                "resource_type": "datastore_table",
+                "resource_name": "meetings",
+                "permission_ids": [
+                    "datastore.table.read",
+                    "datastore.record.read"
+                ]
+            },
+            {
+                "resource_type": "datastore_table",
+                "resource_name": "action_items",
+                "permission_ids": [
+                    "datastore.table.read",
+                    "datastore.record.read"
+                ]
+            }
+        ]
+    }
+}

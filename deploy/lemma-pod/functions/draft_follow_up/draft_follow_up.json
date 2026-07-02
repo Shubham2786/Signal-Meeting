@@ -1,0 +1,36 @@
+{
+    "name": "draft_follow_up",
+    "description": "Draft a recap email for a meeting from its confirmed action items, via the follow_up_writer agent.",
+    "type": "API",
+    "code": {
+        "$file": "code.py"
+    },
+    "permissions": {
+        "grants": [
+            {
+                "resource_type": "datastore_table",
+                "resource_name": "meetings",
+                "permission_ids": [
+                    "datastore.table.read",
+                    "datastore.record.read"
+                ]
+            },
+            {
+                "resource_type": "datastore_table",
+                "resource_name": "action_items",
+                "permission_ids": [
+                    "datastore.table.read",
+                    "datastore.record.read"
+                ]
+            },
+            {
+                "resource_type": "agent",
+                "resource_name": "follow_up_writer",
+                "permission_ids": [
+                    "agent.read",
+                    "agent.execute"
+                ]
+            }
+        ]
+    }
+}
