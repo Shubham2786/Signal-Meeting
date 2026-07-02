@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# build output
+dist/
+**/dist/
+web/dist/
+
+# data & secrets
+/data/
+data/
+**/data/
+.env
+*.local
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / os
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# misc
+coverage/
+*.tsbuildinfo
+
+# Cloned reference (not part of this project)
+lemma-platform/
+
+# Kiro workspace config (not part of the project)
+.kiro/

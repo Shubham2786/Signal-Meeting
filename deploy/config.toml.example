@@ -1,0 +1,22 @@
+# Example Lemma configuration (equivalent to the keys set by lemma-setup.sh).
+# These mirror the app's .env for the openai_compat model profile. Apply with
+# `lemma-stack config set KEY VALUE` — this file documents the intended values.
+#
+# NOTE: This is a convenience reference. The authoritative mechanism is the
+# `lemma-stack config set` CLI. Do not treat this as an app deployment manifest.
+
+[model]
+LEMMA_DEFAULT_MODEL_TYPE = "openai_compat"
+LEMMA_OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+LEMMA_OPENAI_DEFAULT_MODEL = "gemini-2.5-flash"
+LEMMA_OPENAI_MODEL_NAMES = "gemini-2.5-flash,gemini-2.5-pro"
+LEMMA_OPENAI_VISION_MODEL_NAMES = "gemini-2.5-pro"
+
+[secrets]
+# Provide via environment / secret store, not in plaintext committed files.
+LEMMA_OPENAI_API_KEY = "__REPLACE_ME__"
+
+[endpoints]
+# Access the local stack via the sslip.io host (NOT localhost).
+frontend = "http://127-0-0-1.sslip.io:3711"
+backend = "http://127-0-0-1.sslip.io:8711"

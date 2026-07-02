@@ -1,0 +1,30 @@
+{
+    "name": "signal-meetings",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Signal Meetings — an AI Meeting-to-Execution Operator (prototype).",
+    "workspaces": [
+        "packages/core",
+        "server",
+        "web"
+    ],
+    "scripts": {
+        "build": "npm run build -w @signal/core && npm run build -w @signal/server && npm run build -w @signal/web",
+        "build:core": "npm run build -w @signal/core",
+        "build:server": "npm run build -w @signal/server",
+        "build:web": "npm run build -w @signal/web",
+        "dev": "npm run build:core && concurrently -n server,web -c blue,magenta \"npm run dev -w @signal/server\" \"npm run dev -w @signal/web\"",
+        "dev:server": "npm run build:core && npm run dev -w @signal/server",
+        "dev:web": "npm run dev -w @signal/web",
+        "start": "npm run start -w @signal/server",
+        "seed": "npm run seed -w @signal/server",
+        "test": "npm run test -w @signal/core && npm run test -w @signal/server"
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.0",
+        "typescript": "^5.6.3"
+    },
+    "engines": {
+        "node": ">=20"
+    }
+}
